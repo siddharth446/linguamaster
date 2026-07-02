@@ -125,7 +125,13 @@ object AudioHelper {
         stopPlayback()
         try {
             val decodedBytes = Base64.decode(base64Audio, Base64.DEFAULT)
-            val tempPlayFile = File(context.cacheDir, "tts_play_temp.mp3")
+            Log.d(TAG, "Decoded base64 audio size: ${decodedBytes.size} bytes")
+            if (decodedBytes.isEmpty()) {
+                throw Exception("Decoded audio byte array is empty")
+            }
+
+            // Using .aac since Gemini audio response modalities return AAC format
+            val tempPlayFile = File(context.cacheDir, "tts_play_temp.aac")
             if (tempPlayFile.exists()) {
                 tempPlayFile.delete()
             }
@@ -134,19 +140,30 @@ object AudioHelper {
                 fos.write(decodedBytes)
                 fos.flush()
             }
+            Log.d(TAG, "Written to temp audio file. Path: ${tempPlayFile.absolutePath}, Size: ${tempPlayFile.length()} bytes")
 
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(tempPlayFile.absolutePath)
-                prepare()
-                setOnCompletionListener {
-                    _isPlaying.value = false
-                    stopPlayback()
-                    onComplete()
+            val fis = java.io.FileInputStream(tempPlayFile)
+            try {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(fis.fd)
+                    prepare()
+                    setOnCompletionListener {
+                        _isPlaying.value = false
+                        stopPlayback()
+                        onComplete()
+                    }
+                    start()
                 }
-                start()
+            } finally {
+                try {
+                    fis.close()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to close temporary FileInputStream", e)
+                }
             }
+
             _isPlaying.value = true
-            Log.d(TAG, "Playing TTS generated audio response")
+            Log.d(TAG, "Playing TTS generated audio response successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to play base64 audio", e)
             _isPlaying.value = false
