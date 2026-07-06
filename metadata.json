@@ -1,6 +1,6 @@
 {
-  "name": "Mock Interviewer",
-  "description": "A Gemini-powered real-time AI mock interviewer featuring Dr. Sarah Sterling. Evaluates spoken responses with dynamic IELTS and HR recruiter feedback reports.",
+  "name": "Devansh Sir",
+  "description": "A Gemini-powered real-time AI mock interviewer featuring Devansh Sir. Evaluates spoken responses with dynamic IELTS and HR recruiter feedback reports.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
